@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona una Carta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            text-align: center; /* Centrar el contenido */
+        }
+        .row {
+            display: flex; /* Usar flexbox para alinear las cartas en fila */
+            justify-content: center; /* Centrar las cartas horizontalmente */
+            margin-bottom: 20px; /* Espacio entre filas */
+        }
+        button.card-button {
+            border: 2px solid black; /* Contorno negro */
+            background-color: transparent; /* Sin fondo para ver la imagen */
+            cursor: pointer;
+            padding: 0; /* Sin padding para ajustar imagen */
+            margin: 0 10px; /* Espacio entre botones */
+            transition: border-color 0.3s; /* Transición suave para el borde */
+        }
+        img {
+            width: 100px; /* Ajusta el tamaño de las cartas */
+            height: auto;
+            display: block; /* Asegura que la imagen se comporte bien dentro del botón */
+        }
+        button:hover img {
+            opacity: 0.8; /* Efecto de hover en la imagen */
+        }
+        .selected {
+            border-color: green; /* Borde verde para la carta seleccionada */
+        }
+        #nextButton {
+            margin-top: 20px; /* Espacio arriba del botón siguiente */
+            padding: 10px 20px; /* Tamaño del botón siguiente */
+            font-size: 16px; /* Tamaño de la fuente */
+            cursor: pointer;
+            display: none; /* Inicialmente oculto */
+            margin: 0 auto; /* Centrando el botón */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Selecciona una Carta</h2>
+    <div id="cards"></div>
+    <button id="nextButton">Siguiente</button> <!-- Botón visible por defecto -->
+</div>
+
+<script>
+    const suits = ['Corazones', 'Diamantes', 'Tréboles', 'Picas'];
+    const values = [
+        'As', '2', '3', '4', '5', '6', '7', '8', '9', '10', 
+        'J', 'Q', 'K'
+    ];
+
+    const cardContainer = document.getElementById('cards');
+    const nextButton = document.getElementById('nextButton');
+    let selectedButton = null; // Variable para guardar la carta seleccionada
+
+    // Crear filas para cada tipo de carta
+    suits.forEach(suit => {
+        const row = document.createElement('div');
+        row.classList.add('row');
+
+        values.forEach(value => {
+            const button = document.createElement('button');
+            button.classList.add('card-button');
+            const img = document.createElement('img');
+            img.src = `png/${value}${suit}.png`; // Ruta a la imagen de la carta
+            img.alt = `${value}${suit}`; // Texto alternativo
+            
+            button.appendChild(img);
+            button.onclick = () => {
+                // Si hay una carta seleccionada, quitar la clase de selección
+                if (selectedButton) {
+                    selectedButton.classList.remove('selected');
+                }
+                // Añadir la clase de selección al botón clicado
+                button.classList.add('selected');
+                selectedButton = button; // Actualizar la carta seleccionada
+                nextButton.style.display = 'block'; // Mostrar el botón siguiente
+            };
+            row.appendChild(button);
+        });
+
+        cardContainer.appendChild(row); // Agregar la fila al contenedor
+    });
+
+    nextButton.onclick = () => {
+        window.location.href = 'preguntas.html';
+    };
+</script>
+
+</body>
+</html>

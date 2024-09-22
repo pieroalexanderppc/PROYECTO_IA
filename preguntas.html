@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina la Carta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #question {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        #result {
+            display: none;
+            /* Oculto por defecto */
+        }
+
+        #cardImage {
+            border: 2px solid black;
+            /* Agrega el contorno negro */
+            border-radius: 5px;
+            /* Opcional: agrega esquinas redondeadas */
+            margin-top: 10px;
+            /* Espacio superior */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Adivina la Carta</h2>
+        <div id="question"></div>
+        <button id="yesButton">Sí</button>
+        <button id="noButton">No</button>
+        <div id="result">
+            <h3>¡He adivinado tu carta!</h3>
+            <img id="cardImage" src="" alt="Carta seleccionada">
+        </div>
+    </div>
+
+    <script>
+        const cards = [
+            { name: "As de Corazones", suit: "Corazones", value: "As" },
+            { name: "2 de Corazones", suit: "Corazones", value: "2" },
+            { name: "3 de Corazones", suit: "Corazones", value: "3" },
+            { name: "4 de Corazones", suit: "Corazones", value: "4" },
+            { name: "5 de Corazones", suit: "Corazones", value: "5" },
+            { name: "6 de Corazones", suit: "Corazones", value: "6" },
+            { name: "7 de Corazones", suit: "Corazones", value: "7" },
+            { name: "8 de Corazones", suit: "Corazones", value: "8" },
+            { name: "9 de Corazones", suit: "Corazones", value: "9" },
+            { name: "10 de Corazones", suit: "Corazones", value: "10" },
+            { name: "J de Corazones", suit: "Corazones", value: "J" },
+            { name: "Q de Corazones", suit: "Corazones", value: "Q" },
+            { name: "K de Corazones", suit: "Corazones", value: "K" },
+            { name: "As de Diamantes", suit: "Diamantes", value: "As" },
+            { name: "2 de Diamantes", suit: "Diamantes", value: "2" },
+            { name: "3 de Diamantes", suit: "Diamantes", value: "3" },
+            { name: "4 de Diamantes", suit: "Diamantes", value: "4" },
+            { name: "5 de Diamantes", suit: "Diamantes", value: "5" },
+            { name: "6 de Diamantes", suit: "Diamantes", value: "6" },
+            { name: "7 de Diamantes", suit: "Diamantes", value: "7" },
+            { name: "8 de Diamantes", suit: "Diamantes", value: "8" },
+            { name: "9 de Diamantes", suit: "Diamantes", value: "9" },
+            { name: "10 de Diamantes", suit: "Diamantes", value: "10" },
+            { name: "J de Diamantes", suit: "Diamantes", value: "J" },
+            { name: "Q de Diamantes", suit: "Diamantes", value: "Q" },
+            { name: "K de Diamantes", suit: "Diamantes", value: "K" },
+            { name: "As de Tréboles", suit: "Tréboles", value: "As" },
+            { name: "2 de Tréboles", suit: "Tréboles", value: "2" },
+            { name: "3 de Tréboles", suit: "Tréboles", value: "3" },
+            { name: "4 de Tréboles", suit: "Tréboles", value: "4" },
+            { name: "5 de Tréboles", suit: "Tréboles", value: "5" },
+            { name: "6 de Tréboles", suit: "Tréboles", value: "6" },
+            { name: "7 de Tréboles", suit: "Tréboles", value: "7" },
+            { name: "8 de Tréboles", suit: "Tréboles", value: "8" },
+            { name: "9 de Tréboles", suit: "Tréboles", value: "9" },
+            { name: "10 de Tréboles", suit: "Tréboles", value: "10" },
+            { name: "J de Tréboles", suit: "Tréboles", value: "J" },
+            { name: "Q de Tréboles", suit: "Tréboles", value: "Q" },
+            { name: "K de Tréboles", suit: "Tréboles", value: "K" },
+            { name: "As de Picas", suit: "Picas", value: "As" },
+            { name: "2 de Picas", suit: "Picas", value: "2" },
+            { name: "3 de Picas", suit: "Picas", value: "3" },
+            { name: "4 de Picas", suit: "Picas", value: "4" },
+            { name: "5 de Picas", suit: "Picas", value: "5" },
+            { name: "6 de Picas", suit: "Picas", value: "6" },
+            { name: "7 de Picas", suit: "Picas", value: "7" },
+            { name: "8 de Picas", suit: "Picas", value: "8" },
+            { name: "9 de Picas", suit: "Picas", value: "9" },
+            { name: "10 de Picas", suit: "Picas", value: "10" },
+            { name: "J de Picas", suit: "Picas", value: "J" },
+            { name: "Q de Picas", suit: "Picas", value: "Q" },
+            { name: "K de Picas", suit: "Picas", value: "K" }
+        ];
+
+        const questions = [
+            { text: "¿Es un trébol?", condition: (card) => card.suit === "Tréboles" },
+            { text: "¿Es un diamante?", condition: (card) => card.suit === "Diamantes" },
+            { text: "¿Es un corazón?", condition: (card) => card.suit === "Corazones" },
+            { text: "¿Es una pica?", condition: (card) => card.suit === "Picas" },
+            { text: "¿Es un número menor o igual a 5?", condition: (card) => parseInt(card.value) <= 5 },
+            { text: "¿Es un rey, reina o jota?", condition: (card) => ["J", "Q", "K"].includes(card.value) },
+            { text: "¿Es un as?", condition: (card) => card.value === "As" },
+            { text: "¿Es par?", condition: (card) => ["2", "4", "6", "8", "10"].includes(card.value) },
+            { text: "¿Es un número impar?", condition: (card) => ["3", "5", "7", "9"].includes(card.value) },
+            { text: "¿Es un número mayor que 5?", condition: (card) => parseInt(card.value) > 5 },
+        ];
+
+
+        let possibleCards = cards.slice();
+        let questionIndex = 0;
+
+        const questionElement = document.getElementById('question');
+        const yesButton = document.getElementById('yesButton');
+        const noButton = document.getElementById('noButton');
+        const resultElement = document.getElementById('result');
+        const cardImage = document.getElementById('cardImage');
+
+        function showNextQuestion() {
+            if (possibleCards.length === 1) {
+                const guessedCard = possibleCards[0];
+                questionElement.innerText = `¡Tu carta es ${guessedCard.name}!`;
+                cardImage.src = `png/${guessedCard.value}${guessedCard.suit}.png`; // Ruta de la imagen
+                resultElement.style.display = 'block';
+                yesButton.style.display = 'none';
+                noButton.style.display = 'none';
+            } else if (questionIndex < questions.length) {
+                questionElement.innerText = questions[questionIndex].text;
+            } else {
+                const guessedCard = possibleCards[0];
+                questionElement.innerText = `¡Adivinando... Tu carta es ${guessedCard.name}!`;
+                cardImage.src = `png/${guessedCard.value}${guessedCard.suit}.png`; // Ruta de la imagen
+                resultElement.style.display = 'block';
+                yesButton.style.display = 'none';
+                noButton.style.display = 'none';
+            }
+        }
+
+        yesButton.onclick = () => {
+            possibleCards = possibleCards.filter(questions[questionIndex].condition);
+            questionIndex++;
+            showNextQuestion();
+        };
+
+        noButton.onclick = () => {
+            possibleCards = possibleCards.filter(card => !questions[questionIndex].condition(card));
+            questionIndex++;
+            showNextQuestion();
+        };
+
+        // Iniciar mostrando la primera pregunta
+        showNextQuestion();
+    </script>
+
+</body>
+
+</html>

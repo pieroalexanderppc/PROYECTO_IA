@@ -1,18 +1,13 @@
 import itertools
 
-
 class Sentence():
-
     def evaluate(self, model):
-        """Evaluates the logical sentence."""
         raise Exception("nothing to evaluate")
 
     def formula(self):
-        """Returns string formula representing logical sentence."""
         return ""
 
     def symbols(self):
-        """Returns a set of all symbols in the logical sentence."""
         return set()
 
     @classmethod
@@ -22,9 +17,7 @@ class Sentence():
 
     @classmethod
     def parenthesize(cls, s):
-        """Parenthesizes an expression if not already parenthesized."""
         def balanced(s):
-            """Checks if a string has balanced parentheses."""
             count = 0
             for c in s:
                 if c == "(":
@@ -41,9 +34,7 @@ class Sentence():
         else:
             return f"({s})"
 
-
 class Symbol(Sentence):
-
     def __init__(self, name):
         self.name = name
 
@@ -68,7 +59,6 @@ class Symbol(Sentence):
     def symbols(self):
         return {self.name}
 
-
 class Not(Sentence):
     def __init__(self, operand):
         Sentence.validate(operand)
@@ -91,7 +81,6 @@ class Not(Sentence):
 
     def symbols(self):
         return self.operand.symbols()
-
 
 class And(Sentence):
     def __init__(self, *conjuncts):
@@ -121,14 +110,13 @@ class And(Sentence):
         return all(conjunct.evaluate(model) for conjunct in self.conjuncts)
 
     def formula(self):
-        if len(self.conjuncts) == 1:
+        if len(self.conjuncts == 1):
             return self.conjuncts[0].formula()
         return " ∧ ".join([Sentence.parenthesize(conjunct.formula())
                            for conjunct in self.conjuncts])
 
     def symbols(self):
         return set.union(*[conjunct.symbols() for conjunct in self.conjuncts])
-
 
 class Or(Sentence):
     def __init__(self, *disjuncts):
@@ -152,14 +140,13 @@ class Or(Sentence):
         return any(disjunct.evaluate(model) for disjunct in self.disjuncts)
 
     def formula(self):
-        if len(self.disjuncts) == 1:
+        if len(self.disjuncts == 1):
             return self.disjuncts[0].formula()
-        return " ∨  ".join([Sentence.parenthesize(disjunct.formula())
+        return " ∨ ".join([Sentence.parenthesize(disjunct.formula())
                             for disjunct in self.disjuncts])
 
     def symbols(self):
         return set.union(*[disjunct.symbols() for disjunct in self.disjuncts])
-
 
 class Implication(Sentence):
     def __init__(self, antecedent, consequent):
@@ -190,7 +177,6 @@ class Implication(Sentence):
 
     def symbols(self):
         return set.union(self.antecedent.symbols(), self.consequent.symbols())
-
 
 class Biconditional(Sentence):
     def __init__(self, left, right):
@@ -224,40 +210,106 @@ class Biconditional(Sentence):
     def symbols(self):
         return set.union(self.left.symbols(), self.right.symbols())
 
-
 def model_check(knowledge, query):
     """Checks if knowledge base entails query."""
 
     def check_all(knowledge, query, symbols, model):
         """Checks if knowledge base entails query, given a particular model."""
 
-        # If model has an assignment for each symbol
         if not symbols:
-
-            # If knowledge base is true in model, then query must also be true
             if knowledge.evaluate(model):
                 return query.evaluate(model)
             return True
         else:
-
-            # Choose one of the remaining unused symbols
             remaining = symbols.copy()
             p = remaining.pop()
 
-            # Create a model where the symbol is true
             model_true = model.copy()
             model_true[p] = True
 
-            # Create a model where the symbol is false
             model_false = model.copy()
             model_false[p] = False
 
-            # Ensure entailment holds in both models
             return (check_all(knowledge, query, remaining, model_true) and
                     check_all(knowledge, query, remaining, model_false))
 
-    # Get all symbols in both knowledge and query
     symbols = set.union(knowledge.symbols(), query.symbols())
 
-    # Check that knowledge entails query
     return check_all(knowledge, query, symbols, dict())
+
+# Definir los símbolos para características de las cartas
+rojo = Symbol("rojo")
+negro = Symbol("negro")
+corazones = Symbol("corazones")
+diamantes = Symbol("diamantes")
+treboles = Symbol("treboles")
+picas = Symbol("picas")
+par = Symbol("par")
+impar = Symbol("impar")
+
+# Definir símbolos para algunas cartas específicas
+as_carta = Symbol("As")
+dos = Symbol("2")
+tres = Symbol("3")
+cuatro = Symbol("4")
+cinco = Symbol("5")
+seis = Symbol("6")
+siete = Symbol("7")
+ocho = Symbol("8")
+nueve = Symbol("9")
+diez = Symbol("10")
+
+# Crear las reglas lógicas que representan las relaciones entre símbolos
+regla_rojo = Biconditional(rojo, Or(corazones, diamantes))
+regla_negro = Biconditional(negro, Or(treboles, picas))
+regla_par = Biconditional(par, Or(dos, cuatro, seis, ocho, diez))
+regla_impar = Biconditional(impar, Or(as_carta, tres, cinco, siete, nueve))
+
+# Base de conocimiento inicial
+knowledge = And(regla_rojo, regla_negro, regla_par, regla_impar)
+
+# Función para actualizar la base de conocimiento basada en las respuestas
+def actualizar_conocimiento(knowledge, pregunta, respuesta):
+    if pregunta == "¿Es roja?":
+        if respuesta:
+            knowledge.add(rojo)
+        else:
+            knowledge.add(negro)
+    elif pregunta == "¿Es de corazones?":
+        if respuesta:
+            knowledge.add(corazones)
+        else:
+            knowledge.add(diamantes)
+    elif pregunta == "¿Es de tréboles?":
+        if respuesta:
+            knowledge.add(treboles)
+        else:
+            knowledge.add(picas)
+    elif pregunta == "¿Es par?":
+        if respuesta:
+            knowledge.add(par)
+        else:
+            knowledge.add(impar)
+    elif pregunta == "¿Es el cinco?":
+        if respuesta:
+            knowledge.add(cinco)
+        else:
+            knowledge.add(Not(cinco))
+    return knowledge
+
+# Función para verificar si la carta puede ser deducida
+def deducir_carta(knowledge):
+    posibles_cartas = [as_carta, dos, tres, cuatro, cinco, seis, siete, ocho, nueve, diez]
+    for carta in posibles_cartas:
+        if model_check(knowledge, carta):
+            return f"La carta es el {carta}"
+    return "No se ha podido deducir la carta aún."
+
+# Ejemplo de uso
+knowledge = actualizar_conocimiento(knowledge, "¿Es roja?", False)
+knowledge = actualizar_conocimiento(knowledge, "¿Es de tréboles?", True)
+knowledge = actualizar_conocimiento(knowledge, "¿Es par?", False)
+knowledge = actualizar_conocimiento(knowledge, "¿Es el cinco?", True)
+
+resultado = deducir_carta(knowledge)
+print(resultado)

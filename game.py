@@ -48,5 +48,3 @@ def check_knowledge(knowledge):
             if model_check(knowledge, symbol):
                 possible_cards.append(f"{value} de {suit}")
     return possible_cards
-
-

@@ -5,38 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adivina la Carta</title>
     <style>
-         body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
             text-align: center;
         }
-
         .container {
             max-width: 800px;
             margin: auto;
             padding: 20px;
         }
-
         button {
             margin: 10px;
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
         }
-
         #question {
             margin-bottom: 20px;
             font-size: 18px;
         }
-
         #result {
             display: none;
         }
-
         #cardImage {
             border: 2px solid black;
             border-radius: 5px;
             margin-top: 10px;
+            max-width: 100%;
         }
     </style>
 </head>
@@ -47,57 +43,102 @@
     <div id="question"></div>
     <button id="yesButton">Sí</button>
     <button id="noButton">No</button>
-    <div id="result" style="display: none;">
-        <h3>¡He adivinado tu carta!</h3>
+    <div id="result">
+        <h3 id="resultText"></h3>
         <img id="cardImage" src="" alt="Carta seleccionada">
     </div>
+    <button id="resetButton" style="display: none;">Reiniciar Juego</button>
 </div>
 
 <script>
     const questions = [
-        { text: '¿Es un trébol?' },
-        { text: '¿Es un diamante?' },
-        { text: '¿Es un corazón?' },
-        { text: '¿Es una pica?' },
-        { text: '¿Es un número menor o igual a 5?' },
-        { text: '¿Es un rey, reina o jota?' },
-        { text: '¿Es un as?' },
+        { text: "¿Es de corazones?" },
+        { text: "¿Es de diamantes?" },
+        { text: "¿Es de tréboles?" },
+        { text: "¿Es de picas?" },
+        { text: "¿Es menor o igual a 5?" },
+        { text: "¿Es una figura (J, Q, K)?" },
+        { text: "¿Es un As?" },
+        { text: "¿Es mayor o igual a 6?" },
+        { text: "¿Es roja?" },
+        { text: "¿Es negra?" }
     ];
 
     let questionIndex = 0;
+    const responses = [];
 
     const questionElement = document.getElementById('question');
     const yesButton = document.getElementById('yesButton');
     const noButton = document.getElementById('noButton');
     const resultElement = document.getElementById('result');
     const cardImage = document.getElementById('cardImage');
+    const resetButton = document.getElementById('resetButton');
 
     function showNextQuestion() {
         if (questionIndex < questions.length) {
             questionElement.innerText = questions[questionIndex].text;
         } else {
-            fetch('/adivina', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ answer: "tu_respuesta" }), // Reemplaza con la lógica de respuesta
-            })
-            .then(response => response.json())
-            .then(data => {
-                questionElement.innerText = `Posibles cartas: ${data.join(', ')}`;
-                // Aquí puedes actualizar la imagen de la carta si es necesario
-            });
+            guessCard();
         }
     }
 
+    function guessCard() {
+        const lastResponse = responses[responses.length - 1];
+        fetch('/adivina', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                question: lastResponse.question, 
+                answer: lastResponse.answer 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const possibleCards = data.possible_cards;
+            console.log('Cartas posibles:', possibleCards); // Debug
+            if (possibleCards.length === 1) {
+                questionElement.innerText = `¡Tu carta es ${possibleCards[0]}!`;
+                cardImage.src = `static/png/${possibleCards[0].replace(' de ', '')}.png`;
+                resultElement.style.display = 'block';
+                yesButton.style.display = 'none';
+                noButton.style.display = 'none';
+                resetButton.style.display = 'inline-block';
+            } else if (possibleCards.length === 0) {
+                questionElement.innerText = 'No pude adivinar tu carta.';
+                resultElement.style.display = 'block';
+                resetButton.style.display = 'inline-block';
+            } else {
+                questionIndex++; 
+                showNextQuestion();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            questionElement.innerText = 'Ocurrió un error. Intenta de nuevo.';
+        });
+    }
+
     yesButton.onclick = () => {
+        responses.push({ question: questions[questionIndex].text, answer: "sí" });
         questionIndex++;
         showNextQuestion();
     };
 
     noButton.onclick = () => {
+        responses.push({ question: questions[questionIndex].text, answer: "no" });
         questionIndex++;
+        showNextQuestion();
+    };
+
+    resetButton.onclick = () => {
+        questionIndex = 0;
+        responses.length = 0; 
+        resultElement.style.display = 'none';
+        yesButton.style.display = 'inline-block';
+        noButton.style.display = 'inline-block';
+        resetButton.style.display = 'none';
         showNextQuestion();
     };
 

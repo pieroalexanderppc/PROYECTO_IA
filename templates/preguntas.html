@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina la Carta</title>
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #question {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        #result {
+            display: none;
+        }
+
+        #cardImage {
+            border: 2px solid black;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Adivina la Carta</h2>
+    <div id="question"></div>
+    <button id="yesButton">Sí</button>
+    <button id="noButton">No</button>
+    <div id="result" style="display: none;">
+        <h3>¡He adivinado tu carta!</h3>
+        <img id="cardImage" src="" alt="Carta seleccionada">
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { text: '¿Es un trébol?' },
+        { text: '¿Es un diamante?' },
+        { text: '¿Es un corazón?' },
+        { text: '¿Es una pica?' },
+        { text: '¿Es un número menor o igual a 5?' },
+        { text: '¿Es un rey, reina o jota?' },
+        { text: '¿Es un as?' },
+    ];
+
+    let questionIndex = 0;
+
+    const questionElement = document.getElementById('question');
+    const yesButton = document.getElementById('yesButton');
+    const noButton = document.getElementById('noButton');
+    const resultElement = document.getElementById('result');
+    const cardImage = document.getElementById('cardImage');
+
+    function showNextQuestion() {
+        if (questionIndex < questions.length) {
+            questionElement.innerText = questions[questionIndex].text;
+        } else {
+            fetch('/adivina', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ answer: "tu_respuesta" }), // Reemplaza con la lógica de respuesta
+            })
+            .then(response => response.json())
+            .then(data => {
+                questionElement.innerText = `Posibles cartas: ${data.join(', ')}`;
+                // Aquí puedes actualizar la imagen de la carta si es necesario
+            });
+        }
+    }
+
+    yesButton.onclick = () => {
+        questionIndex++;
+        showNextQuestion();
+    };
+
+    noButton.onclick = () => {
+        questionIndex++;
+        showNextQuestion();
+    };
+
+    showNextQuestion();
+</script>
+
+</body>
+</html>
